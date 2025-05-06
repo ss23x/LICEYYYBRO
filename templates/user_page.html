@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="profile-header mb-5">
+    <div class="d-flex align-items-center">
+        {% if user.avatar and user.avatar != 'default.jpg' %}
+            <img src="{{ url_for('static', filename='uploads/' + user.avatar) }}"
+                 class="rounded-circle me-3 avatar-img">
+        {% else %}
+            <img src="{{ user.get_gravatar_url() }}"
+                 class="rounded-circle me-3 avatar-img">
+        {% endif %}
+        <div>
+            <h1>{{ user.username }}</h1>
+            {% if current_user.id == user.id %}
+            <a href="{{ url_for('edit_profile') }}" class="btn btn-secondary">Редактировать профиль</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="user-posts mb-5">
+    <h2>Посты пользователя</h2>
+    {% if posts %}
+        {% for post in posts %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title">{{ post.title }}</h5>
+                {% if post.image %}
+                <img src="{{ url_for('static', filename='uploads/posts/' + post.image) }}"
+                     class="img-fluid mb-3 post-image">
+                {% endif %}
+                <p class="card-text">{{ post.content }}</p>
+                <a href="{{ url_for('index') }}#post-{{ post.id }}" class="btn btn-sm btn-outline-primary">
+                    Перейти к посту
+                </a>
+
+                <!-- Комментарии -->
+                <div class="mt-4">
+                    <h6>Комментарии:</h6>
+                    {% for comment in post.root_comments %}
+                        <div class="card mb-2 comment-thread">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <strong>
+                                            <a href="{{ url_for('user_page', username=comment.author.username) }}">
+                                                {{ comment.author.username }}
+                                            </a>
+                                        </strong>
+                                        <span class="text-muted small">
+                                            {{ comment.created_at.strftime('%d.%m.%Y %H:%M') }}
+                                        </span>
+                                    </div>
+                                    {% if comment.author.id == post.author.id %}
+                                        <span class="badge bg-primary">Автор поста</span>
+                                    {% endif %}
+                                </div>
+                                <p class="mt-2">{{ comment.content }}</p>
+
+                                <!-- Ответы -->
+                                {% for reply in comment.replies %}
+                                    <div class="card mt-2 reply">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between">
+                                                <div>
+                                                    <strong>
+                                                        <a href="{{ url_for('user_page', username=reply.author.username) }}">
+                                                            {{ reply.author.username }}
+                                                        </a>
+                                                    </strong>
+                                                    <span class="text-muted small">
+                                                        {{ reply.created_at.strftime('%d.%m.%Y %H:%M') }}
+                                                    </span>
+                                                </div>
+                                                {% if reply.author.id == post.author.id %}
+                                                    <span class="badge bg-primary">Автор поста</span>
+                                                {% endif %}
+                                            </div>
+                                            <p class="mt-2">{{ reply.content }}</p>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">Пока нет комментариев</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-info">Постов пока нет</div>
+    {% endif %}
+</div>
+
+<div class="user-likes">
+    <h2>Понравившиеся посты</h2>
+    {% if liked_posts %}
+        {% for post in liked_posts %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title">{{ post.title }}</h5>
+                {% if post.image %}
+                <img src="{{ url_for('static', filename='uploads/posts/' + post.image) }}"
+                     class="img-fluid mb-3 post-image">
+                {% endif %}
+                <a href="{{ url_for('index') }}#post-{{ post.id }}" class="btn btn-sm btn-outline-primary">
+                    Перейти к посту
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-info">Лайков пока нет</div>
+    {% endif %}
+</div>
+{% endblock %}
